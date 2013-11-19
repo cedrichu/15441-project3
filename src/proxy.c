@@ -37,8 +37,7 @@ double ALPHA = 0.7;
 int LISTEN_PORT = 4433;
 
 //Server
-char FAKE_IP[20] = "0.0.0.0";
-int FAKE_PORT = 8081;
+char FAKE_IP[20] = "1.0.0.1";
 char SERVER_IP[20] = "3.0.0.1";
 char SERVER_PORT[20] = "8080";
 //char* DNS_IP;
@@ -132,7 +131,6 @@ int main(int argc, char* argv[])
     }
     
     addr_proxy_client.sin_family = AF_INET;
-    addr_proxy_client.sin_port = htons(FAKE_PORT);
     inet_pton(AF_INET, FAKE_IP, &(addr_proxy_client.sin_addr));
 
     
@@ -202,6 +200,7 @@ int main(int argc, char* argv[])
                   if((proxy_client_sock = socket(servinfo->ai_family, servinfo->ai_socktype, servinfo->ai_protocol)) == -1)
                   {
                       fprintf(logfile, "Proxy Client Socket failed");
+                      printf("an error: %s\n", strerror(errno));
                       return EXIT_FAILURE;
                   }
     
@@ -216,6 +215,7 @@ int main(int argc, char* argv[])
                   if (connect (proxy_client_sock, servinfo->ai_addr, servinfo->ai_addrlen) == -1)
                   {
                       fprintf(logfile, "Proxy Connect WEB Server");
+                      printf("an error: %s\n", strerror(errno));
                       return EXIT_FAILURE;
                   }  
 
@@ -301,7 +301,8 @@ int main(int argc, char* argv[])
                }
                else{
                 
-                  if((readret = read(conn_i, &buf_read[conn_i], BUF_SIZE)) < 1)
+                  readret = 0; 
+                  if((readret = read(conn_i, buf_read[conn_i], BUF_SIZE)) < 1)
                   {   
                       
                       if(readret == -1)
