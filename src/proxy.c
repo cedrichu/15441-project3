@@ -37,8 +37,8 @@ double ALPHA = 0.7;
 int LISTEN_PORT = 4433;
 
 //Server
-char FAKE_IP[20] = "1.1.1.1";
-char FAKE_PORT[20] = "1234";
+char FAKE_IP[20] = "0.0.0.0";
+int FAKE_PORT = 8081;
 char SERVER_IP[20] = "3.0.0.1";
 char SERVER_PORT[20] = "8080";
 //char* DNS_IP;
@@ -128,9 +128,10 @@ int main(int argc, char* argv[])
     int status, proxy_client_sock;
     struct addrinfo hints;
     memset(&hints, 0, sizeof(struct addrinfo));
-    struct addrinfo *servinfo, *clientinfo; //will point to the results
+    struct addrinfo *servinfo; //will point to the results
+    struct sockaddr_in addr_proxy_client;
     
-    hints.ai_family = AF_UNSPEC;  //don't care IPv4 or IPv6
+    hints.ai_family = AF_INET;  //don't care IPv4 or IPv6
     hints.ai_socktype = SOCK_STREAM; //TCP stream sockets
     hints.ai_flags = AI_PASSIVE; //fill in my IP for me
 
@@ -140,22 +141,21 @@ int main(int argc, char* argv[])
         fprintf(logfile, "getaddrinfo error SERVER IP: %s \n", gai_strerror(status));
         return EXIT_FAILURE;
     }
-    if ((status = getaddrinfo(FAKE_IP, FAKE_PORT, &hints, &clientinfo)) != 0) 
-    {
-        fprintf(logfile, "getaddrinfo error FAKE IP: %s \n", gai_strerror(status));
-        return EXIT_FAILURE;
-    }
-
+    
     if((proxy_client_sock = socket(servinfo->ai_family, servinfo->ai_socktype, servinfo->ai_protocol)) == -1)
     {
         fprintf(logfile, "Proxy Client Socket failed");
         return EXIT_FAILURE;
     }
+    addr_proxy_client.sin_family = AF_INET;
+    addr_proxy_client.sin_port = htons(FAKE_PORT);
+    inet_pton(AF_INET, FAKE_IP, &(addr_proxy_client.sin_addr));
     
-    if (bind(proxy_client_sock, clientinfo->ai_addr, sizeof(clientinfo->ai_addr)))
+    if (bind(proxy_client_sock, (struct sockaddr *) &addr_proxy_client, sizeof(addr_proxy_client)))
     {
-        close_socket(sock);
+        close_socket(proxy_client_sock);
         fprintf(logfile, "Failed binding Proxy Client Socket.\n");
+        printf("an error: %s\n", strerror(errno));
         return EXIT_FAILURE;
     }   
     
