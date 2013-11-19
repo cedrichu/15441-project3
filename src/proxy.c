@@ -141,7 +141,6 @@ int main(int argc, char* argv[])
     
      fclose(logfile);
      int maxConn = 0;
-     int current_client_sock = -1; 
      fd_set act_conn;
      FD_ZERO(&act_conn);
      FD_SET(sock, &act_conn);
@@ -294,7 +293,7 @@ int main(int argc, char* argv[])
                           
                           memset(buf_read[conn_i], 0, BUF_SIZE);// reset read buffer memory
                           bufread_ind[conn_i] = 0;
-                          current_client_sock = conn_i;
+              
                         } 
                       }
                     }
