@@ -63,19 +63,10 @@ int close_socket(int sock)
     return 0;
 }
 
+
 int main(int argc, char* argv[])
 {
     
-    /*if ( argc != 7 ) 
-    {
-        printf( "usage: %s <log> <alpha> <listen-port> <fake-ip> <dns-ip> <dns-port> [<www-ip>]\n", argv[0] );
-        return EXIT_FAILURE;
-    }
-    else 
-    {
-       
-    }
-    */
 
  logfile = fopen( logfilename, "w" );   
  
@@ -86,8 +77,6 @@ int main(int argc, char* argv[])
     int bufread_ind[BUF_SIZE];
     char* buf_write[FD_SIZE];
     int bufwrite_ind[BUF_SIZE];
-    HTTPResponse* httpresponse_list[FD_SIZE];
-   
    
    fprintf(stdout, "----- Proxy Start-----\n");
     
@@ -142,22 +131,10 @@ int main(int argc, char* argv[])
         return EXIT_FAILURE;
     }
     
-    if((proxy_client_sock = socket(servinfo->ai_family, servinfo->ai_socktype, servinfo->ai_protocol)) == -1)
-    {
-        fprintf(logfile, "Proxy Client Socket failed");
-        return EXIT_FAILURE;
-    }
     addr_proxy_client.sin_family = AF_INET;
     addr_proxy_client.sin_port = htons(FAKE_PORT);
     inet_pton(AF_INET, FAKE_IP, &(addr_proxy_client.sin_addr));
-    
-    if (bind(proxy_client_sock, (struct sockaddr *) &addr_proxy_client, sizeof(addr_proxy_client)))
-    {
-        close_socket(proxy_client_sock);
-        fprintf(logfile, "Failed binding Proxy Client Socket.\n");
-        printf("an error: %s\n", strerror(errno));
-        return EXIT_FAILURE;
-    }   
+
     
 /*---------------------Proxy Client Part END----------------------------------*/
 
@@ -169,37 +146,10 @@ int main(int argc, char* argv[])
      FD_ZERO(&act_conn);
      FD_SET(sock, &act_conn);
      maxConn = sock;
-
-
-   FD_SET(proxy_client_sock, &act_conn);
-   bufread_ind[proxy_client_sock] = bufwrite_ind[proxy_client_sock] = 0;
-   buf_read[proxy_client_sock] = (char *)malloc(BUF_SIZE*sizeof(char));
-   buf_write[proxy_client_sock] = (char *)malloc(BUF_SIZE*sizeof(char));
-   memset(buf_read[proxy_client_sock], 0, BUF_SIZE);
-   memset(buf_write[proxy_client_sock], 0, BUF_SIZE);
-   maxConn = max(maxConn, proxy_client_sock); 
- 
-   /*construct_manifest_request(buf_write[proxy_client_sock], BUF_SIZE); 
-   if (connect (proxy_client_sock, servinfo->ai_addr, servinfo->ai_addrlen) == -1)
-    {
-        fprintf(logfile, "Proxy Connect WEB Server");
-        return EXIT_FAILURE;
-    }
-
-   if ((writeret = write(proxy_client_sock, buf_write[proxy_client_sock], readret )) < 1)
-      {   
-        if (writeret == -1)
-        {
-          close_socket(proxy_client_sock);
-          close_socket(sock);
-          strcpy(err, "Error sending to client.\n");
-          logging(err);
-          fprintf(stderr, "%s", err);
-          return EXIT_FAILURE;
-        }
-      }
-      */
-
+     int client_to_proxy_client_map[FD_SIZE];
+     memset(client_to_proxy_client_map, 0, sizeof(client_to_proxy_client_map));
+     int proxy_client_to_client_map[FD_SIZE];
+     memset(proxy_client_to_client_map, 0, sizeof(proxy_client_to_client_map));
 
     /* finally, loop waiting for input and then write it back */
     while (1)
@@ -245,134 +195,148 @@ int main(int argc, char* argv[])
                    bufread_ind[client_sock] = bufwrite_ind[client_sock] = 0;
                    buf_read[client_sock] = (char *)malloc(BUF_SIZE*sizeof(char));
                    buf_write[client_sock] = (char *)malloc(BUF_SIZE*sizeof(char));
-                   HTTPResponse* httpresponse = malloc( sizeof(HTTPResponse) );
                    memset(buf_read[client_sock], 0, BUF_SIZE);
                    memset(buf_write[client_sock], 0, BUF_SIZE);
-                   memset(httpresponse, 0, sizeof(HTTPResponse));
-                   httpresponse_list[client_sock] = httpresponse;
                    maxConn = max(maxConn, client_sock);
+                  
+                  //Set up Porxy Client Socket for this client socket
+                  if((proxy_client_sock = socket(servinfo->ai_family, servinfo->ai_socktype, servinfo->ai_protocol)) == -1)
+                  {
+                      fprintf(logfile, "Proxy Client Socket failed");
+                      return EXIT_FAILURE;
+                  }
+    
+                  if (bind(proxy_client_sock, (struct sockaddr *) &addr_proxy_client, sizeof(addr_proxy_client)))
+                  {
+                      close_socket(proxy_client_sock);
+                      fprintf(logfile, "Failed binding Proxy Client Socket.\n");
+                      printf("an error: %s\n", strerror(errno));
+                      return EXIT_FAILURE;
+                  }
+
+                  if (connect (proxy_client_sock, servinfo->ai_addr, servinfo->ai_addrlen) == -1)
+                  {
+                      fprintf(logfile, "Proxy Connect WEB Server");
+                      return EXIT_FAILURE;
+                  }  
+
+                   FD_SET(proxy_client_sock, &act_conn);
+                   bufread_ind[proxy_client_sock] = bufwrite_ind[proxy_client_sock] = 0;
+                   buf_read[proxy_client_sock] = (char *)malloc(BUF_SIZE*sizeof(char));
+                   buf_write[proxy_client_sock] = (char *)malloc(BUF_SIZE*sizeof(char));
+                   memset(buf_read[proxy_client_sock], 0, BUF_SIZE);
+                   memset(buf_write[proxy_client_sock], 0, BUF_SIZE);
+                   maxConn = max(maxConn, proxy_client_sock);
+
+                   client_to_proxy_client_map[client_sock] = proxy_client_sock; 
+                   proxy_client_to_client_map[proxy_client_sock] = client_sock; 
+
                 }
                }
 
           }
-         else if(conn_i == proxy_client_sock)
-          {
-           if(FD_ISSET(conn_i, &readfds))
-            {
-              if((readret = read(conn_i, &buf_read[conn_i], BUF_SIZE)) < 1)
-              {   
-                    
-                    if(readret == -1)
-                    {
-                     close_socket(conn_i);
-                     FD_CLR(conn_i, &act_conn);
-                     strcpy(err, "Error reading from proxy client socket.\n");
-                     logging(err);
-                     fprintf(stderr, "%s", err);
-                     return EXIT_FAILURE;
-                    }     
-              }
-              else
-              {
-                 if (  (writeret = write(current_client_sock, buf_read[conn_i], readret )) < 1)
-                  {   
-                    if (writeret == -1)
-                    {
-                      close_socket(current_client_sock);
-                      close_socket(sock);
-                      strcpy(err, "Error sending to client.\n");
-                      logging(err);
-                      fprintf(stderr, "%s", err);
-                      return EXIT_FAILURE;
-                    }
-                  }
-                  memset(buf_read[conn_i], 0, BUF_SIZE);   
-                  
-              }
-            }
-         }
          else
          {
             if(FD_ISSET(conn_i, &readfds))
-            {
-              
-                readret = 0; 
-                char buf_read_tmp;         
-                if((readret = read(conn_i, &buf_read_tmp, 1)) < 1)
-                {   
+            {            
+              if(client_to_proxy_client_map[conn_i] != 0)
+              { 
+                  readret = 0; 
+                  char buf_read_tmp;         
+                  if((readret = read(conn_i, &buf_read_tmp, 1)) < 1)
+                  {   
 
-                    if(readret == 0)
-                    {
-                        close_socket(conn_i);                      
-                        free(buf_read[conn_i]);
-                        free(buf_write[conn_i]);
-                        free(httpresponse_list[conn_i]);
-                        httpresponse_list[conn_i] = NULL;
-                        FD_CLR(conn_i, &act_conn);                         
-                    }                     
-                    if (readret == -1)
-                    {
+                      if(readret == 0)
+                      {
+                          close_socket(conn_i);                      
+                          free(buf_read[conn_i]);
+                          free(buf_write[conn_i]);
+                          FD_CLR(conn_i, &act_conn);                         
+                      }                     
+                      if (readret == -1)
+                      {
+                         close_socket(conn_i);
+                         close_socket(sock);
+                         FD_CLR(conn_i, &act_conn);
+                         strcpy(err, "Error reading from client socket.\n");
+                         logging(err);
+                         fprintf(stderr, "%s", err);
+                         return EXIT_FAILURE;
+                      }
+                  }
+                  else
+                  {
+
+                    //Support Pipeline: When receiving '\r\n\r\n', lisod begin to process this request
+                     strcpy(buf_read[conn_i]+bufread_ind[conn_i], &buf_read_tmp);
+                     bufread_ind[conn_i]++;
+                    
+                    if(buf_read_tmp == '\r')
+                    {   
+                      char Peek[3];
+                      if(recv(conn_i, &Peek, 3, MSG_PEEK))
+                      {
+                        if(Peek[0] == '\n' && (Peek[1] == '\r' && Peek[2] == '\n'))
+                        {
+                          read(conn_i, buf_read[conn_i]+bufread_ind[conn_i], 3);
+                          bufread_ind[conn_i]+= 3;
+
+                          if ((writeret = write(client_to_proxy_client_map[conn_i], buf_read[conn_i], bufread_ind[conn_i]) ) < 1)
+                          {   
+                            if (writeret == -1)
+                            {                           
+                              strcpy(err, "Error sending to client.\n");
+                              logging(err);
+                              fprintf(stderr, "%s", err);
+                              return EXIT_FAILURE;
+                            }
+                          }
+                          
+                          memset(buf_read[conn_i], 0, BUF_SIZE);// reset read buffer memory
+                          bufread_ind[conn_i] = 0;
+                          current_client_sock = conn_i;
+                        } 
+                      }
+                    }
+                  }
+               }
+               else{
+                
+                  if((readret = read(conn_i, &buf_read[conn_i], BUF_SIZE)) < 1)
+                  {   
+                      
+                      if(readret == -1)
+                      {
                        close_socket(conn_i);
-                       close_socket(sock);
                        FD_CLR(conn_i, &act_conn);
-                       strcpy(err, "Error reading from client socket.\n");
+                       strcpy(err, "Error reading from proxy client socket.\n");
                        logging(err);
                        fprintf(stderr, "%s", err);
                        return EXIT_FAILURE;
-                    }
-                }
-                else
-                {
-
-                  //Support Pipeline: When receiving '\r\n\r\n', lisod begin to process this request
-                   strcpy(buf_read[conn_i]+bufread_ind[conn_i], &buf_read_tmp);
-                   bufread_ind[conn_i]++;
-                  
-                  if(buf_read_tmp == '\r')
-                  {   
-                    char Peek[3];
-                    if(recv(conn_i, &Peek, 3, MSG_PEEK))
-                    {
-                      if(Peek[0] == '\n' && (Peek[1] == '\r' && Peek[2] == '\n'))
-                      {
-                        read(conn_i, buf_read[conn_i]+bufread_ind[conn_i], 3);
-                        bufread_ind[conn_i]+= 3;
+                      }     
+                   }
+                  else
+                  {
+                     if ((writeret = write(proxy_client_to_client_map[conn_i], buf_read[conn_i], readret )) < 1)
+                      {   
+                        if (writeret == -1)
+                        {
+                          close_socket(proxy_client_to_client_map[conn_i]);
+                          close_socket(sock);
+                          strcpy(err, "Error sending to client.\n");
+                          logging(err);
+                          fprintf(stderr, "%s", err);
+                          return EXIT_FAILURE;
+                        }
+                      }
+                      memset(buf_read[conn_i], 0, BUF_SIZE);   
                       
-                        /*if(is_manifest_request(buf_read[conn_i], bufread_ind[conn_i]))
-                        {
-                         construct_manifest_request(); 
-                        }
-                        else  
-                        {
-                         //change_bitrate();                         
-                        }*/
-
-                        if (connect (proxy_client_sock, servinfo->ai_addr, servinfo->ai_addrlen) == -1)
-                        {
-                            fprintf(logfile, "Proxy Connect WEB Server");
-                            return EXIT_FAILURE;
-                        }
-                        if ((writeret = write(proxy_client_sock, buf_read[conn_i], bufread_ind[conn_i]) ) < 1)
-                        {   
-                          if (writeret == -1)
-                          {                           
-                            strcpy(err, "Error sending to client.\n");
-                            logging(err);
-                            fprintf(stderr, "%s", err);
-                            return EXIT_FAILURE;
-                          }
-                        }
-                        
-                        memset(buf_read[conn_i], 0, BUF_SIZE);// reset read buffer memory
-                        bufread_ind[conn_i] = 0;
-                        current_client_sock = conn_i;
-                      } 
-                    }
                   }
-                }                
-            }
-           
 
+                }
+
+
+            }
           }  
        }   
     }
