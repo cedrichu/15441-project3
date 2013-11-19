@@ -155,15 +155,10 @@ int main(int argc, char* argv[])
     if (bind(proxy_client_sock, clientinfo->ai_addr, sizeof(clientinfo->ai_addr)))
     {
         close_socket(sock);
-        fprintf(logfile, "Failed binding socket.\n");
+        fprintf(logfile, "Failed binding Proxy Client Socket.\n");
         return EXIT_FAILURE;
     }   
     
-    
-   
-
-
-
 /*---------------------Proxy Client Part END----------------------------------*/
 
     
