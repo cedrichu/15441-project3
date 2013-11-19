@@ -284,7 +284,7 @@ int main(int argc, char* argv[])
                           {   
                             if (writeret == -1)
                             {                           
-                              strcpy(err, "Error sending to client.\n");
+                              strcpy(err, "Error sending to web server.\n");
                               logging(err);
                               fprintf(stderr, "%s", err);
                               return EXIT_FAILURE;
@@ -308,7 +308,7 @@ int main(int argc, char* argv[])
                       {
                        close_socket(conn_i);
                        FD_CLR(conn_i, &act_conn);
-                       strcpy(err, "Error reading from proxy client socket.\n");
+                       strcpy(err, "Error reading from web server.\n");
                        logging(err);
                        fprintf(stderr, "%s", err);
                        return EXIT_FAILURE;
@@ -322,7 +322,7 @@ int main(int argc, char* argv[])
                         {
                           close_socket(proxy_client_to_client_map[conn_i]);
                           close_socket(sock);
-                          strcpy(err, "Error sending to client.\n");
+                          strcpy(err, "Error sending to client socket.\n");
                           logging(err);
                           fprintf(stderr, "%s", err);
                           return EXIT_FAILURE;
