@@ -23,9 +23,44 @@
 #include <sys/wait.h>
 #include <stdlib.h>
 
+
+enum socktype {PROXY, CLIENT};
+     
+typedef struct{
+
+int sock;
+char* buf_read;
+char* buf_write;
+int bufwrite_ind;
+int bufread_ind;
+
+enum socktype type;
+int paired_sock;
+double tput_current;
+double tput_new;
+time_t timer_s;
+time_t timer_f;
+} SockData;
+
+int close_socket(int sock);
+void InitSockData(SockData* sock_data, int sock);
+void FreeSockData(SockData* sock_data, int sock);
+void ResetSockData(SockData* sock_data);
+
+/*int ReplaceURI(char* modify, char* origin, char* search, char* replace);
+void BitrateSelection(char* writebuf, char* readbuf, int bitrate, time_t* timer_s);
+void TputCalculation(char* readbuf,int bufsize, double* tput_current, double* tput_new, time_t* timer_f);
+void GetManifestfile(char* writebuf, char* readbuf, int sock);
+*/
+
+
+
+
+
+
+/*
 typedef struct 
 {
-	/* data */
 	char method[255];
 	char path[255];
 	
@@ -53,5 +88,5 @@ void http_content(char*, int, HTTPResponse *);
 void http_not_found(char*, int, HTTPResponse * );
 void http_unimplemented(char*, int, HTTPResponse * );
 void http_unsupported(char*, int, HTTPResponse * );
-
+*/
 

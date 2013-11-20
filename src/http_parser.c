@@ -24,8 +24,76 @@
 #include <time.h>
 #include "http_parser.h"
 
+#define BUF_SIZE 8192
 
-#define ISspace(x) isspace((int)(x))
+int close_socket(int sock)
+{
+    if (close(sock))
+    {
+        fprintf(stderr, "Failed closing socket.\n");
+        return 1;
+    }
+    return 0;
+}
+
+void InitSockData(SockData* data, int sock)
+{
+  data->sock = sock;
+  data->bufread_ind = data->bufwrite_ind = 0;
+  data->buf_read = (char *)malloc(BUF_SIZE*sizeof(char));
+  data->buf_write = (char *)malloc(BUF_SIZE*sizeof(char));  
+  memset(data->buf_read, 0, BUF_SIZE);
+  memset(data->buf_write, 0, BUF_SIZE);
+
+}
+void FreeSockData(SockData* data, int sock)
+{
+   close_socket(sock);
+   free(data->buf_read);
+   free(data->buf_write);
+}
+void ResetSockData(SockData* data)
+{
+   memset(data->buf_read, 0, BUF_SIZE);
+   memset(data->buf_write, 0, BUF_SIZE);
+   data->bufread_ind = data->bufwrite_ind = 0;
+   
+}
+
+/*int ReplaceURI(char* modify, char* origin, char* search, char* replace)
+{
+  char* char_ptr = NULL;
+  if( (char_ptr = strstr(origin, search)) != NULL)
+  {
+    strcpy(modify, origin, char_ptr-origin);
+    modify[char_ptr-origin] = 0;
+    sprintf(modify+(char_ptr-origin), "%s%s", replace, char_ptr+strlen(search));
+    return 1;
+  }
+  else
+  return 0;
+
+}
+void BitrateSelection()
+{   
+  //if(ReplaceURI(writebuf, readbuf, "1000" , bitrate) == 1)
+
+}
+
+
+void TputCalculation()
+{
+   //if(ChunkStart(readbuf))
+
+}
+
+void GetManifestfile()
+{
+
+}
+*/
+
+/*#define ISspace(x) isspace((int)(x))
 #define SERVER_STRING "Server: Liso/1.0\r\n"
 
 char WWW[] = "./tmp/www";
@@ -327,7 +395,7 @@ void http_unimplemented(char* writebuf, int writebuf_size, HTTPResponse* respons
  response->write_byte += strlen(buf);
  
  }
-
+*/
 
 
 
