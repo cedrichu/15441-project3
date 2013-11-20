@@ -247,10 +247,17 @@ int main(int argc, char* argv[])
 
                       if(readret == 0)
                       {
-                          close_socket(conn_i);                      
+                          close_socket(conn_i);
+                          close_socket(client_to_proxy_client_map[conn_i]);                      
                           free(buf_read[conn_i]);
                           free(buf_write[conn_i]);
-                          FD_CLR(conn_i, &act_conn);                         
+                          FD_CLR(conn_i, &act_conn);
+                          free(buf_read[client_to_proxy_client_map[conn_i]]);
+                          free(buf_write[client_to_proxy_client_map[conn_i]]);
+                          FD_CLR(client_to_proxy_client_map[conn_i], &act_conn);
+                          proxy_client_to_client_map[client_to_proxy_client_map[conn_i]] = 0;
+                          client_to_proxy_client_map[conn_i] = 0;
+
                       }                     
                       if (readret == -1)
                       {
