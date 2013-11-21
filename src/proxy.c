@@ -123,7 +123,7 @@ int main(int argc, char* argv[])
      
      SockData sock_data[FD_SIZE];
      memset(sock_data, 0, sizeof(sock_data));
-     SockData sdata; 
+     SockData* sdata; 
      
 /*--------------------------------------------------------------------------------*/
      
@@ -176,7 +176,7 @@ int main(int argc, char* argv[])
   
        for(conn_i = 0; conn_i <= maxConn; conn_i++)
        {
-         sdata = sock_data[conn_i];
+         sdata = &sock_data[conn_i];
          if(conn_i == sock )
          {
               if(FD_ISSET(conn_i, &readfds))
@@ -254,7 +254,7 @@ int main(int argc, char* argv[])
          {
             if(FD_ISSET(conn_i, &readfds))
             {            
-              if(sdata.type == CLIENT)
+              if(sdata->type == CLIENT)
               { 
                   readret = 0; 
                   char buf_read_tmp;         
@@ -265,9 +265,9 @@ int main(int argc, char* argv[])
                       {
                           
                           FD_CLR(conn_i, &act_conn);
-                          FD_CLR(sdata.paired_sock, &act_conn);
-                          FreeSockData(&sdata, conn_i);
-                          FreeSockData(&sock_data[sdata.paired_sock], sdata.paired_sock);
+                          FD_CLR(sdata->paired_sock, &act_conn);
+                          FreeSockData(sdata, conn_i);
+                          FreeSockData(&sock_data[sdata->paired_sock], sdata->paired_sock);
                           
                           /*close_socket(conn_i);
                           close_socket(client_to_proxy_client_map[conn_i]);                      
@@ -295,8 +295,8 @@ int main(int argc, char* argv[])
                   {
 
                     //Support Pipeline: When receiving '\r\n\r\n', lisod begin to process this request
-                     strcpy(sdata.buf_read+sdata.bufread_ind, &buf_read_tmp);
-                     sdata.bufread_ind++;
+                     strcpy(sdata->buf_read+sdata->bufread_ind, &buf_read_tmp);
+                     sdata->bufread_ind++;
                     
                     if(buf_read_tmp == '\r')
                     {   
@@ -305,20 +305,20 @@ int main(int argc, char* argv[])
                       {
                         if(Peek[0] == '\n' && (Peek[1] == '\r' && Peek[2] == '\n'))
                         {
-                          read(conn_i, sdata.buf_read+sdata.bufread_ind, 3);
-                          sdata.bufread_ind+= 3;
+                          read(conn_i, sdata->buf_read+sdata->bufread_ind, 3);
+                          sdata->bufread_ind+= 3;
 
                           /*if(ReplaceURI(socket_data[sdata.paired_sock].buf_write ,sdata.buf_read, video_name, video_nolist_name) == 0)
                             BitrateSelection();
                             */
                           
                           writeret = 0;
-                          if ((writeret = write(sdata.paired_sock, sdata.buf_read, sdata.bufread_ind )) < 1)
+                          if ((writeret = write(sdata->paired_sock, sdata->buf_read, sdata->bufread_ind )) < 1)
                           {   
                             if (writeret == -1)
                             {                           
                               close_socket(sock);
-                              close_socket(sdata.paired_sock);
+                              close_socket(sdata->paired_sock);
                               strcpy(err, "Error sending to web server.\n");
                               logging(err);
                               fprintf(stderr, "%s", err);
@@ -330,8 +330,8 @@ int main(int argc, char* argv[])
                           bufread_ind[conn_i] = 0;
                           memset(buf_write[client_to_proxy_client_map[conn_i]], 0, BUF_SIZE);
                           */
-                          ResetSockData(&sdata);
-                          ResetSockData(&sock_data[sdata.paired_sock]);
+                          ResetSockData(sdata);
+                          ResetSockData(&sock_data[sdata->paired_sock]);
               
                         } 
                       }
@@ -341,7 +341,7 @@ int main(int argc, char* argv[])
                else{
                 
                   readret = 0; 
-                  if((readret = read(conn_i, sdata.buf_read, BUF_SIZE)) < 1)
+                  if((readret = read(conn_i, sdata->buf_read, BUF_SIZE)) < 1)
                   {   
                       
                       if(readret == -1)
@@ -358,11 +358,11 @@ int main(int argc, char* argv[])
                   {                     
                      //TputCalculation();
                      writeret = 0;
-                     if ((writeret = write(sdata.paired_sock, sdata.buf_read, readret )) < 1)
+                     if ((writeret = write(sdata->paired_sock, sdata->buf_read, readret )) < 1)
                       {   
                         if (writeret == -1)
                         {
-                          close_socket(sdata.paired_sock);
+                          close_socket(sdata->paired_sock);
                           close_socket(sock);
                           strcpy(err, "Error sending to client socket.\n");
                           logging(err);
@@ -370,7 +370,7 @@ int main(int argc, char* argv[])
                           return EXIT_FAILURE;
                         }
                       }
-                      ResetSockData(&sdata);  
+                      ResetSockData(sdata);  
                       
                   }
 
