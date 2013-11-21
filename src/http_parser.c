@@ -155,20 +155,15 @@ void TputCalculation(SockData* proxy, double alpha)
   
   if(proxy->type != PROXY)
     fprintf(stderr, "Tput Calculation Error.\n");
+  
+  time(&(proxy->bitratedata.timer_f));
+  proxy->bitratedata.duration = difftime(proxy->bitratedata.timer_f, proxy->bitratedata.timer_s);
+  proxy->bitratedata.tput_new = (double)(proxy->bitratedata.chunksize*8) / (duration*1000);
+  proxy->bitratedata.tput_current = (alpha) * (proxy->bitratedata.tput_new) + (1-alpha) * (proxy->bitratedata.tput_current);
+  //logging
+  proxy->bitratedata.chunksize = 0;
+  proxy->bitratedata.remain_chunksize = 0;
 
-  if(ChunkStart(proxy) == 0)
-  {    
-    if(ChunkEnd(proxy) == 1)
-    {
-      time(&(proxy->bitratedata.timer_f));
-      duration = difftime(proxy->bitratedata.timer_f, proxy->bitratedata.timer_s);
-      proxy->bitratedata.tput_new = (double)(proxy->bitratedata.chunksize*8) / (duration*1000);
-      proxy->bitratedata.tput_current = (alpha) * (proxy->bitratedata.tput_new) + (1-alpha) * (proxy->bitratedata.tput_current);
-      //logging
-      proxy->bitratedata.chunksize = 0;
-      proxy->bitratedata.remain_chunksize = 0;
-    }
-  }
 }
 int ChunkStart(SockData* proxy)
 {

@@ -307,8 +307,12 @@ int main(int argc, char* argv[])
                    }
                   else
                   {   
-                     sdata->bufread_ind = readret;                  
-                     TputCalculation(sdata, ALPHA);
+                     sdata->bufread_ind = readret;
+                     
+                     ChunkStart(sdata);
+                     if(ChunkEnd(sdata))                  
+                      TputCalculation(sdata, ALPHA);
+                     
                      writeret = 0;
                      if ((writeret = write(sdata->paired_sock, sdata->buf_read, readret )) < 1)
                       {   
