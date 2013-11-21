@@ -157,7 +157,8 @@ void TputCalculation(SockData* proxy, double alpha)
     fprintf(stderr, "Tput Calculation Error.\n");
   
   time(&(proxy->bitratedata.timer_f));
-  proxy->bitratedata.duration = difftime(proxy->bitratedata.timer_f, proxy->bitratedata.timer_s);
+  duration = difftime(proxy->bitratedata.timer_f, proxy->bitratedata.timer_s);
+  proxy->bitratedata.duration = duration;
   proxy->bitratedata.tput_new = (double)(proxy->bitratedata.chunksize*8) / (duration*1000);
   proxy->bitratedata.tput_current = (alpha) * (proxy->bitratedata.tput_new) + (1-alpha) * (proxy->bitratedata.tput_current);
   //logging
