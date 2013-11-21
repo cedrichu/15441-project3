@@ -194,7 +194,8 @@ int main(int argc, char* argv[])
                   //Set up Porxy Client Socket for this client socket
                   if((proxy_client_sock = socket(servinfo->ai_family, servinfo->ai_socktype, servinfo->ai_protocol)) == -1)
                   {
-                      fprintf(logfile, "Proxy Client Socket failed");
+                      strcpy(err, "Proxy Client Socket failed.\n");
+                      logging(err);
                       printf("an error: %s\n", strerror(errno));
                       return EXIT_FAILURE;
                   }
@@ -202,14 +203,16 @@ int main(int argc, char* argv[])
                   if (bind(proxy_client_sock, (struct sockaddr *) &addr_proxy_client, sizeof(addr_proxy_client)))
                   {
                       close_socket(proxy_client_sock);
-                      fprintf(logfile, "Failed binding Proxy Client Socket.\n");
+                      strcpy(err, "Failed binding Proxy Client Socket.\n");
+                      logging(err);
                       printf("an error: %s\n", strerror(errno));
                       return EXIT_FAILURE;
                   }
 
                   if (connect (proxy_client_sock, servinfo->ai_addr, servinfo->ai_addrlen) == -1)
                   {
-                      fprintf(logfile, "Proxy Connect WEB Server");
+                      strcpy(err, "Proxy Connect WEB Server.\n");
+                      logging(err);
                       printf("an error: %s\n", strerror(errno));
                       return EXIT_FAILURE;
                   }  

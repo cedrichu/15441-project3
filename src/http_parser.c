@@ -180,7 +180,7 @@ int ChunkStart(SockData* proxy)
     
     head = strstr(proxy->buf_read, "\r\n\r\n");
     head += 3;
-    proxy->bitratedata.remain_chunksize = proxy->bitratedata.remain_chunksize - (proxy->buf_read+proxy->bufread_ind - head);
+    proxy->bitratedata.remain_chunksize = proxy->bitratedata.remain_chunksize - (proxy->buf_read+proxy->bufread_ind - head)+1;
     return 1;
    }
   else
