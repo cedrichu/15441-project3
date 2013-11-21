@@ -113,7 +113,7 @@ int ReplaceURI(SockData* dst, SockData* src, char* search, char* replace)
   return 0;
 
 }
-void BitrateSelection(SockData* proxy, SockData* client, double* bitrate, int bitrate_no)
+int BitrateSelection(SockData* proxy, SockData* client, double* bitrate, int bitrate_no)
 {   
 
   int i;
@@ -142,7 +142,10 @@ void BitrateSelection(SockData* proxy, SockData* client, double* bitrate, int bi
      http_getrequest(buf, sizeof(buf), head+5);
      strcpy(proxy->bitratedata.chunkname, buf);
      time(&(proxy->bitratedata.timer_s));
+     return 1;
    }
+   else
+    return 0;
 }
 
 

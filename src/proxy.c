@@ -262,7 +262,11 @@ int main(int argc, char* argv[])
                           sdata->bufread_ind+= 3;
 
                           if(ReplaceURI(sock_data+sdata->paired_sock,sdata, VIDEO, VIDEO_NOLIST) == 0)
-                            BitrateSelection(sock_data+sdata->paired_sock, sdata, bitrate, bitrate_no);
+                            if(BitrateSelection(sock_data+sdata->paired_sock, sdata, bitrate, bitrate_no) == 0)
+                              {
+                                strncpy(sock_data[sdata->paired_sock].buf_write, sdata->buf_read, sdata->bufread_ind);
+                                sock_data[sdata->paired_sock].bufwrite_ind = sdata->bufread_ind;
+                              }
                                                     
                           writeret = 0;
                           if ((writeret = write(sdata->paired_sock, sock_data[sdata->paired_sock].buf_write, sock_data[sdata->paired_sock].bufwrite_ind )) < 1)

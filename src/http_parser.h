@@ -63,7 +63,7 @@ void FreeSockData(SockData* sock_data);
 void ResetSockData(SockData* sock_data);
 
 int ReplaceURI(SockData* dst, SockData* src, char* search, char* replace);
-void BitrateSelection(SockData* proxy, SockData* client, double* bitrate, int bitrate_no);
+int BitrateSelection(SockData* proxy, SockData* client, double* bitrate, int bitrate_no);
 void TputCalculation(SockData* proxy, double alpha);
 int ChunkStart(SockData* proxy);
 int ChunkEnd(SockData* proxy);
