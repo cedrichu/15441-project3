@@ -196,7 +196,7 @@ int main(int argc, char* argv[])
                   {
                       strcpy(err, "Proxy Client Socket failed.\n");
                       logging(err);
-                      printf("an error: %s\n", strerror(errno));
+                      printf("an error1: %s\n", strerror(errno));
                       return EXIT_FAILURE;
                   }
     
@@ -205,7 +205,7 @@ int main(int argc, char* argv[])
                       close_socket(proxy_client_sock);
                       strcpy(err, "Failed binding Proxy Client Socket.\n");
                       logging(err);
-                      printf("an error: %s\n", strerror(errno));
+                      printf("an error2: %s\n", strerror(errno));
                       return EXIT_FAILURE;
                   }
 
@@ -213,7 +213,7 @@ int main(int argc, char* argv[])
                   {
                       strcpy(err, "Proxy Connect WEB Server.\n");
                       logging(err);
-                      printf("an error: %s\n", strerror(errno));
+                      printf("an error3: %s\n", strerror(errno));
                       return EXIT_FAILURE;
                   }  
 
