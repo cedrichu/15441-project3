@@ -176,7 +176,7 @@ int main(int argc, char* argv[])
   
        for(conn_i = 0; conn_i <= maxConn; conn_i++)
        {
-         sdatag = sock_data[conn_i];
+         sdata = sock_data[conn_i];
          if(conn_i == sock )
          {
               if(FD_ISSET(conn_i, &readfds))
