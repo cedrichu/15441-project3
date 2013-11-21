@@ -33,9 +33,9 @@ typedef struct
   double tput_new;
   time_t timer_s;
   time_t timer_f;
-  char chunkname[100];
   double duration;
   //should be cleared when chunk starts
+  char chunkname[100];
   int chunksize;
   int remain_chunksize;
 

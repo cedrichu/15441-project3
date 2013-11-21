@@ -140,6 +140,7 @@ int BitrateSelection(SockData* proxy, SockData* client, double* bitrate, int bit
      ReplaceURI(proxy, client, "1000" , str);
      head = strstr(proxy->buf_write, "/vod/");
      http_getrequest(buf, sizeof(buf), head+5);
+     memset(proxy->bitratedata.chunkname, 0, sizeof(proxy->bitratedata.chunkname));
      strcpy(proxy->bitratedata.chunkname, buf);
      time(&(proxy->bitratedata.timer_s));
      return 1;
@@ -199,5 +200,12 @@ int ChunkEnd(SockData* proxy)
   }
   else
     return 0;
-
 }
+
+
+
+
+
+
+
+

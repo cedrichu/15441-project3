@@ -33,6 +33,9 @@
 
 char logfilename[20] = "proxy_server_log.txt";
 FILE *logfile  = NULL;
+
+char PROXYLOG_NAME[20] = "PROXYLOG.txt";
+FILE *PROXYLOG  = NULL;
 double ALPHA = 0.7;
 int LISTEN_PORT = 4433;
 char VIDEO[40] = "big_buck_bunny.f4m";
@@ -52,12 +55,21 @@ void logging(char* buf){
  fclose(file);
 
 }
+void ProxyLogging(SockData* proxy)
+{
+ FILE* file = fopen( PROXYLOG_NAME, "a" );
+ fprintf(file, "%f %f %f %f %s %s\n",proxy->bitratedata.duration, proxy->bitratedata.tput_new,\
+  proxy->bitratedata.tput_current, proxy->bitratedata.bitrate, SERVER_IP, proxy->bitratedata.chunkname);
+ fclose(file);
+}
 
 int main(int argc, char* argv[])
 {
     
 
- logfile = fopen( logfilename, "w" );   
+ logfile = fopen( logfilename, "w" );
+ PROXYLOG = fopen( PROXYLOG_NAME, "w" );
+ fclose(PROXYLOG);   
  
  /*------------------Proxy Server Part-------------*/
     
@@ -117,6 +129,7 @@ int main(int argc, char* argv[])
     addr_proxy_client.sin_family = AF_INET;
     inet_pton(AF_INET, FAKE_IP, &(addr_proxy_client.sin_addr));
     
+    fclose(logfile);
 /*---------------------Proxy Client Part END----------------------------------*/
      
      SockData sock_data[FD_SIZE];
@@ -125,7 +138,6 @@ int main(int argc, char* argv[])
      int bitrate_no = 4;
      double bitrate[4] = {10, 100, 500, 1000}; 
      
-     fclose(logfile);
      int maxConn = 0;
      fd_set act_conn;
      FD_ZERO(&act_conn);
@@ -309,10 +321,12 @@ int main(int argc, char* argv[])
                   {   
                      sdata->bufread_ind = readret;
                      
-                     ChunkStart(sdata);
-                     if(ChunkEnd(sdata))                  
-                      TputCalculation(sdata, ALPHA);
-                     
+                     if(ChunkStart(sdata) == 0)
+                      if(ChunkEnd(sdata) == 1)                  
+                        {
+                          TputCalculation(sdata, ALPHA);
+                          ProxyLogging(sdata);
+                        }
                      writeret = 0;
                      if ((writeret = write(sdata->paired_sock, sdata->buf_read, readret )) < 1)
                       {   
