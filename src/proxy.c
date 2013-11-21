@@ -134,24 +134,8 @@ int main(int argc, char* argv[])
      FD_ZERO(&act_conn);
      FD_SET(sock, &act_conn);
      maxConn = sock;
-
      ssize_t readret, writeret;
-     
-     /*char* buf_read[FD_SIZE];
-     int bufread_ind[FD_SIZE];
-     char* buf_write[FD_SIZE];
-     int bufwrite_ind[FD_SIZE];
-
-     int client_to_proxy_client_map[FD_SIZE];
-     memset(client_to_proxy_client_map, 0, sizeof(client_to_proxy_client_map));
-     int proxy_client_to_client_map[FD_SIZE];
-     memset(proxy_client_to_client_map, 0, sizeof(proxy_client_to_client_map));
-     time_t timer_s, timer_f;
-     double tput_current[FD_SIZE] = 0;
-     double tput_new[FD_SIZE] = 0;
-     double chunk_size = 0;
-     int bitrate;
-     */
+    
 
     /* finally, loop waiting for input and then write it back */
     while (1)
@@ -197,14 +181,7 @@ int main(int argc, char* argv[])
                    maxConn = max(maxConn, client_sock);
                    InitSockData(&sock_data[client_sock], client_sock);
                    sock_data[client_sock].type = CLIENT;
-
-                   /*bufread_ind[client_sock] = bufwrite_ind[client_sock] = 0;
-                   buf_read[client_sock] = (char *)malloc(BUF_SIZE*sizeof(char));
-                   buf_write[client_sock] = (char *)malloc(BUF_SIZE*sizeof(char));
-                   memset(buf_read[client_sock], 0, BUF_SIZE);
-                   memset(buf_write[client_sock], 0, BUF_SIZE);
-                   */
-                   
+         
                   //Set up Porxy Client Socket for this client socket
                   if((proxy_client_sock = socket(servinfo->ai_family, servinfo->ai_socktype, servinfo->ai_protocol)) == -1)
                   {
@@ -237,15 +214,6 @@ int main(int argc, char* argv[])
                    sock_data[client_sock].paired_sock = proxy_client_sock;
                    sock_data[proxy_client_sock].paired_sock = client_sock;
 
-                   /*bufread_ind[proxy_client_sock] = bufwrite_ind[proxy_client_sock] = 0;
-                   buf_read[proxy_client_sock] = (char *)malloc(BUF_SIZE*sizeof(char));
-                   buf_write[proxy_client_sock] = (char *)malloc(BUF_SIZE*sizeof(char));
-                   memset(buf_read[proxy_client_sock], 0, BUF_SIZE);
-                   memset(buf_write[proxy_client_sock], 0, BUF_SIZE);
-                   client_to_proxy_client_map[client_sock] = proxy_client_sock; 
-                   proxy_client_to_client_map[proxy_client_sock] = client_sock;
-                   */ 
-
                 }
                }
 
@@ -269,17 +237,6 @@ int main(int argc, char* argv[])
                           FreeSockData(sdata, conn_i);
                           FreeSockData(&sock_data[sdata->paired_sock], sdata->paired_sock);
                           
-                          /*close_socket(conn_i);
-                          close_socket(client_to_proxy_client_map[conn_i]);                      
-                          free(buf_read[conn_i]);
-                          free(buf_write[conn_i]);
-                          free(buf_read[client_to_proxy_client_map[conn_i]]);
-                          free(buf_write[client_to_proxy_client_map[conn_i]]);
-
-                          proxy_client_to_client_map[client_to_proxy_client_map[conn_i]] = 0;
-                          client_to_proxy_client_map[conn_i] = 0;
-                          */
-
                       }                     
                       if (readret == -1)
                       {
@@ -325,11 +282,6 @@ int main(int argc, char* argv[])
                               return EXIT_FAILURE;
                             }
                           }
-                          
-                          /*memset(buf_read[conn_i], 0, BUF_SIZE);// reset read buffer memory
-                          bufread_ind[conn_i] = 0;
-                          memset(buf_write[client_to_proxy_client_map[conn_i]], 0, BUF_SIZE);
-                          */
                           ResetSockData(sdata);
                           ResetSockData(&sock_data[sdata->paired_sock]);
               
