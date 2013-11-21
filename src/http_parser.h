@@ -24,8 +24,23 @@
 #include <stdlib.h>
 
 
-enum socktype {PROXY, CLIENT};
-     
+enum socktype {NONE, PROXY, CLIENT};
+
+typedef struct 
+{
+  double bitrate;
+  double tput_current;
+  double tput_new;
+  time_t timer_s;
+  time_t timer_f;
+  char chunkname[100];
+  //should be cleared when chunk starts
+  int chunksize;
+  int remain_chunksize;
+
+} BitrateData;     
+
+
 typedef struct{
 
 int sock;
@@ -36,24 +51,22 @@ int bufread_ind;
 
 enum socktype type;
 int paired_sock;
-double tput_current;
-double tput_new;
-time_t timer_s;
-time_t timer_f;
+BitrateData bitratedata;
+
 } SockData;
 
+int http_getline(char *, int, char *);
+int http_getrequest(char *, int, char *);
 int close_socket(int sock);
 void InitSockData(SockData* sock_data, int sock);
-void FreeSockData(SockData* sock_data, int sock);
+void FreeSockData(SockData* sock_data);
 void ResetSockData(SockData* sock_data);
 
-/*int ReplaceURI(char* modify, char* origin, char* search, char* replace);
-void BitrateSelection(char* writebuf, char* readbuf, int bitrate, time_t* timer_s);
-void TputCalculation(char* readbuf,int bufsize, double* tput_current, double* tput_new, time_t* timer_f);
-void GetManifestfile(char* writebuf, char* readbuf, int sock);
-*/
-
-
+int ReplaceURI(SockData* dst, SockData* src, char* search, char* replace);
+void BitrateSelection(SockData* proxy, SockData* client, double* bitrate, int bitrate_no);
+void TputCalculation(SockData* proxy, double alpha);
+int ChunkStart(SockData* proxy);
+int ChunkEnd(SockData* proxy);
 
 
 

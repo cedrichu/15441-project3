@@ -35,8 +35,8 @@ char logfilename[20] = "proxy_server_log.txt";
 FILE *logfile  = NULL;
 double ALPHA = 0.7;
 int LISTEN_PORT = 4433;
-char video_name[40] = "big_buck_bunny.f4m";
-char video_nolist_name[40] = "big_buck_bunny_nolist.f4m";
+char VIDEO[40] = "big_buck_bunny.f4m";
+char VIDEO_NOLIST[40] = "big_buck_bunny_nolist.f4m";
 //Server
 char FAKE_IP[20] = "1.0.0.1";
 char SERVER_IP[20] = "3.0.0.1";
@@ -52,8 +52,6 @@ void logging(char* buf){
  fclose(file);
 
 }
-
-
 
 int main(int argc, char* argv[])
 {
@@ -123,11 +121,10 @@ int main(int argc, char* argv[])
      
      SockData sock_data[FD_SIZE];
      memset(sock_data, 0, sizeof(sock_data));
-     SockData* sdata; 
+     SockData* sdata;
+     int bitrate_no = 4;
+     double bitrate[4] = {10, 100, 500, 1000}; 
      
-/*--------------------------------------------------------------------------------*/
-     
-    
      fclose(logfile);
      int maxConn = 0;
      fd_set act_conn;
@@ -206,8 +203,7 @@ int main(int argc, char* argv[])
                   }  
 
                    FD_SET(proxy_client_sock, &act_conn);
-                   maxConn = max(maxConn, proxy_client_sock);
-                   
+                   maxConn = max(maxConn, proxy_client_sock);                   
                    InitSockData(&sock_data[proxy_client_sock], proxy_client_sock);
                    sock_data[proxy_client_sock].type = PROXY;
 
@@ -234,8 +230,8 @@ int main(int argc, char* argv[])
                           
                           FD_CLR(conn_i, &act_conn);
                           FD_CLR(sdata->paired_sock, &act_conn);
-                          FreeSockData(sdata, conn_i);
-                          FreeSockData(&sock_data[sdata->paired_sock], sdata->paired_sock);
+                          FreeSockData(sdata);
+                          FreeSockData(&sock_data[sdata->paired_sock]);
                           
                       }                     
                       if (readret == -1)
@@ -265,12 +261,11 @@ int main(int argc, char* argv[])
                           read(conn_i, sdata->buf_read+sdata->bufread_ind, 3);
                           sdata->bufread_ind+= 3;
 
-                          /*if(ReplaceURI(socket_data[sdata.paired_sock].buf_write ,sdata.buf_read, video_name, video_nolist_name) == 0)
-                            BitrateSelection();
-                            */
-                          
+                          if(ReplaceURI(sock_data+sdata->paired_sock,sdata, VIDEO, VIDEO_NOLIST) == 0)
+                            BitrateSelection(sock_data+sdata->paired_sock, sdata, bitrate, bitrate_no);
+                                                    
                           writeret = 0;
-                          if ((writeret = write(sdata->paired_sock, sdata->buf_read, sdata->bufread_ind )) < 1)
+                          if ((writeret = write(sdata->paired_sock, sock_data[sdata->paired_sock].buf_write, sock_data[sdata->paired_sock].bufwrite_ind )) < 1)
                           {   
                             if (writeret == -1)
                             {                           
@@ -307,8 +302,9 @@ int main(int argc, char* argv[])
                       }     
                    }
                   else
-                  {                     
-                     //TputCalculation();
+                  {   
+                     sdata->bufread_ind = readret;                  
+                     TputCalculation(sdata, ALPHA);
                      writeret = 0;
                      if ((writeret = write(sdata->paired_sock, sdata->buf_read, readret )) < 1)
                       {   
@@ -322,8 +318,8 @@ int main(int argc, char* argv[])
                           return EXIT_FAILURE;
                         }
                       }
-                      ResetSockData(sdata);  
-                      
+                      ResetSockData(sdata);
+                      ResetSockData(&sock_data[sdata->paired_sock]);  
                   }
 
                 }
