@@ -176,7 +176,7 @@ int main(int argc, char* argv[])
   
        for(conn_i = 0; conn_i <= maxConn; conn_i++)
        {
-         sdata = sock_data[conn_i];
+         sdatag = sock_data[conn_i];
          if(conn_i == sock )
          {
               if(FD_ISSET(conn_i, &readfds))
@@ -313,7 +313,7 @@ int main(int argc, char* argv[])
                             */
                           
                           writeret = 0;
-                          if ((writeret = write(sdata.paired_sock, sock_data[sdata.paired_sock].buf_write, strlen(sock_data[sdata.paired_sock].buf_write)) ) < 1)
+                          if ((writeret = write(sdata.paired_sock, sdata.buf_read, sdata.bufread_ind )) < 1)
                           {   
                             if (writeret == -1)
                             {                           
