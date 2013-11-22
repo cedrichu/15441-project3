@@ -127,6 +127,7 @@ int main(int argc, char* argv[])
     }
     
     addr_proxy_client.sin_family = AF_INET;
+    addr_proxy_client.sin_port = htons(0);
     inet_pton(AF_INET, FAKE_IP, &(addr_proxy_client.sin_addr));
     
     fclose(logfile);
@@ -330,6 +331,8 @@ int main(int argc, char* argv[])
                           TputCalculation(sdata, ALPHA);
                           ProxyLogging(sdata);
                         }
+                     //printf("%f/n", sdata->bitratedata.duration);
+                     //logging(sdata->buf_read);
                      writeret = 0;
                      if ((writeret = write(sdata->paired_sock, sdata->buf_read, readret )) < 1)
                       {   

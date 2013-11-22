@@ -10,6 +10,7 @@
 *******************************************************************************/
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <netinet/in.h>
@@ -20,7 +21,6 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <sys/wait.h>
-#include <stdlib.h>
 #include <time.h>
 #include "http_parser.h"
 
@@ -143,6 +143,7 @@ int BitrateSelection(SockData* proxy, SockData* client, double* bitrate, int bit
      memset(proxy->bitratedata.chunkname, 0, sizeof(proxy->bitratedata.chunkname));
      strcpy(proxy->bitratedata.chunkname, buf);
      time(&(proxy->bitratedata.timer_s));
+     printf("start time %s\n", asctime(localtime(&(proxy->bitratedata.timer_s))) );
      return 1;
    }
    else
@@ -158,10 +159,15 @@ void TputCalculation(SockData* proxy, double alpha)
     fprintf(stderr, "Tput Calculation Error.\n");
   
   time(&(proxy->bitratedata.timer_f));
+  printf("End time %s\n",asctime( localtime(&(proxy->bitratedata.timer_f))) );
   duration = difftime(proxy->bitratedata.timer_f, proxy->bitratedata.timer_s);
   proxy->bitratedata.duration = duration;
+  
   proxy->bitratedata.tput_new = (double)(proxy->bitratedata.chunksize*8) / (duration*1000);
+  if(proxy->bitratedata.tput_new > 1000)
+   proxy->bitratedata.tput_new = 1000;
   proxy->bitratedata.tput_current = (alpha) * (proxy->bitratedata.tput_new) + (1-alpha) * (proxy->bitratedata.tput_current);
+  printf("tput_current is %f\n", proxy->bitratedata.tput_current);
   //logging
   proxy->bitratedata.chunksize = 0;
   proxy->bitratedata.remain_chunksize = 0;
@@ -193,6 +199,7 @@ int ChunkEnd(SockData* proxy)
   if(proxy->bitratedata.chunksize > 0)
   {
     proxy->bitratedata.remain_chunksize = proxy->bitratedata.remain_chunksize - proxy->bufread_ind;
+    //printf("chunk%d remain %d\n", proxy->bitratedata.chunksize,proxy->bitratedata.remain_chunksize);
     if(proxy->bitratedata.remain_chunksize == 0)
       return 1;
     else
