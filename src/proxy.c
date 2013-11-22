@@ -32,29 +32,31 @@
 
 //Client
 
-char logfilename[20] = "proxy_server_log.txt";
-FILE *logfile  = NULL;
+//char logfilename[20] = "proxy_server_log.txt";
+//FILE *logfile  = NULL;
 
-char PROXYLOG_NAME[20] = "PROXYLOG.txt";
+char* PROXYLOG_NAME;
 FILE *PROXYLOG  = NULL;
-double ALPHA = 0.7;
-int LISTEN_PORT = 4433;
+double ALPHA;
+int LISTEN_PORT;
 char VIDEO[40] = "big_buck_bunny.f4m";
 char VIDEO_NOLIST[40] = "big_buck_bunny_nolist.f4m";
 //Server
-char FAKE_IP[20] = "1.0.0.1";
-char SERVER_IP[20] = "3.0.0.1";
+char* FAKE_IP;
+char* SERVER_IP;
 char SERVER_PORT[20] = "8080";
-//char* DNS_IP;
-//int DNS_PORT;
+char* DNS_IP;
+int DNS_PORT;
 
 
-void logging(char* buf){
+void logging(char* buf)
+{
 
- FILE* file = fopen( logfilename, "a" );
+ /*FILE* file = fopen( logfilename, "a" );
  fprintf(file, "%s", buf);
  fclose(file);
-
+  */
+ fprintf(stdout, "%s", buf);
 }
 void ProxyLogging(SockData* proxy)
 {
@@ -66,11 +68,28 @@ void ProxyLogging(SockData* proxy)
 
 int main(int argc, char* argv[])
 {
+  if ( argc != 8 ) /* argc should be 3 for correct execution */
+    {
+        printf( "usage: %s <log> <alpha> <listen-port> <fake-ip> <dns-ip> <dns-port> [<www-ip>]\n", argv[0] );
+        return EXIT_FAILURE;
+    }
+    else 
+    {
+       PROXYLOG_NAME = argv[1];
+       PROXYLOG = fopen( PROXYLOG_NAME, "w" );
+       fclose(PROXYLOG);
+       ALPHA = atof(argv[2]);
+       LISTEN_PORT = atoi(argv[3]);
+       FAKE_IP = argv[4];
+       DNS_IP = argv[5];
+       DNS_PORT = atoi(argv[6]);
+       SERVER_IP = argv[7];
+
+    }
     
 
- logfile = fopen( logfilename, "w" );
- PROXYLOG = fopen( PROXYLOG_NAME, "w" );
- fclose(PROXYLOG);   
+ //logfile = fopen( logfilename, "w" );
+    
  
  /*------------------Proxy Server Part-------------*/
     
@@ -84,7 +103,7 @@ int main(int argc, char* argv[])
     /* all networked programs must create a socket */
     if ((sock = socket(PF_INET, SOCK_STREAM, 0)) == -1)
     {
-        fprintf(logfile, "Failed creating socket.\n");
+        fprintf(stdout, "Failed creating socket.\n");
         return EXIT_FAILURE;
     }
 
@@ -96,7 +115,7 @@ int main(int argc, char* argv[])
     if (bind(sock, (struct sockaddr *) &addr, sizeof(addr)))
     {
         close_socket(sock);
-        fprintf(logfile, "Failed binding socket.\n");
+        fprintf(stdout, "Failed binding socket.\n");
         return EXIT_FAILURE;
     }
 
@@ -104,7 +123,7 @@ int main(int argc, char* argv[])
     if (listen(sock, 5))
     {
         close_socket(sock);
-        fprintf(logfile, "Error listening on socket.\n");
+        fprintf(stdout, "Error listening on socket.\n");
         return EXIT_FAILURE;
     }
 
@@ -123,7 +142,7 @@ int main(int argc, char* argv[])
 
     if ((status = getaddrinfo(SERVER_IP, SERVER_PORT, &hints, &servinfo)) != 0) 
     {
-        fprintf(logfile, "getaddrinfo error SERVER IP: %s \n", gai_strerror(status));
+        fprintf(stdout, "getaddrinfo error SERVER IP: %s \n", gai_strerror(status));
         return EXIT_FAILURE;
     }
     
@@ -131,7 +150,7 @@ int main(int argc, char* argv[])
     addr_proxy_client.sin_port = htons(0);
     inet_pton(AF_INET, FAKE_IP, &(addr_proxy_client.sin_addr));
     
-    fclose(logfile);
+    //fclose(logfile);
 /*---------------------Proxy Client Part END----------------------------------*/
      
      SockData sock_data[FD_SIZE];
