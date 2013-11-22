@@ -22,6 +22,7 @@
 #include <sys/stat.h>
 #include <sys/wait.h>
 #include <time.h>
+#include <sys/time.h>
 #include "http_parser.h"
 
 #define BUF_SIZE 8192
@@ -143,7 +144,9 @@ int BitrateSelection(SockData* proxy, SockData* client, double* bitrate, int bit
      memset(proxy->bitratedata.chunkname, 0, sizeof(proxy->bitratedata.chunkname));
      strcpy(proxy->bitratedata.chunkname, buf);
      time(&(proxy->bitratedata.timer_s));
-     printf("start time %s\n", asctime(localtime(&(proxy->bitratedata.timer_s))) );
+     gettimeofday(&(proxy->bitratedata.start), NULL);
+     printf("start time %s", asctime(localtime(&(proxy->bitratedata.timer_s))) );
+     printf("%ld\n", (long int)proxy->bitratedata.start.tv_usec);
      return 1;
    }
    else
@@ -159,13 +162,16 @@ void TputCalculation(SockData* proxy, double alpha)
     fprintf(stderr, "Tput Calculation Error.\n");
   
   time(&(proxy->bitratedata.timer_f));
-  printf("End time %s\n",asctime( localtime(&(proxy->bitratedata.timer_f))) );
+  gettimeofday(&(proxy->bitratedata.stop), NULL);
+  printf("End time %s",asctime( localtime(&(proxy->bitratedata.timer_f))) );
+  printf("%ld\n", (long int)proxy->bitratedata.start.tv_usec);
+  
   duration = difftime(proxy->bitratedata.timer_f, proxy->bitratedata.timer_s);
   proxy->bitratedata.duration = duration;
   
   proxy->bitratedata.tput_new = (double)(proxy->bitratedata.chunksize*8) / (duration*1000);
-  if(proxy->bitratedata.tput_new > 1000)
-   proxy->bitratedata.tput_new = 1000;
+  if(proxy->bitratedata.tput_new > 1500)
+   proxy->bitratedata.tput_new = 1500;
   proxy->bitratedata.tput_current = (alpha) * (proxy->bitratedata.tput_new) + (1-alpha) * (proxy->bitratedata.tput_current);
   printf("tput_current is %f\n", proxy->bitratedata.tput_current);
   //logging

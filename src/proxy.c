@@ -20,6 +20,7 @@
 #include <errno.h>
 #include <sys/types.h>
 #include <netdb.h>
+#include <sys/time.h>
 #include "http_parser.h"
 
 
@@ -58,7 +59,7 @@ void logging(char* buf){
 void ProxyLogging(SockData* proxy)
 {
  FILE* file = fopen( PROXYLOG_NAME, "a" );
- fprintf(file, "%f %f %f %f %s %s\n",proxy->bitratedata.duration, proxy->bitratedata.tput_new,\
+ fprintf(file, "%d %4.0f %f %f %4.0f %s %s\n", (int)proxy->bitratedata.timer_f, proxy->bitratedata.duration, proxy->bitratedata.tput_new,\
   proxy->bitratedata.tput_current, proxy->bitratedata.bitrate, SERVER_IP, proxy->bitratedata.chunkname);
  fclose(file);
 }

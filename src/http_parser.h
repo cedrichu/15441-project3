@@ -21,6 +21,7 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <sys/wait.h>
+#include <sys/time.h>
 #include <stdlib.h>
 
 
@@ -33,6 +34,8 @@ typedef struct
   double tput_new;
   time_t timer_s;
   time_t timer_f;
+  struct timeval start;
+  struct timeval stop;
   double duration;
   //should be cleared when chunk starts
   char chunkname[100];
