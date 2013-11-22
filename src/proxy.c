@@ -61,8 +61,8 @@ void logging(char* buf)
 void ProxyLogging(SockData* proxy)
 {
  FILE* file = fopen( PROXYLOG_NAME, "a" );
- fprintf(file, "%ld.%06ld %2.6f %f %f %4.0f %s %s\n", (long int)proxy->bitratedata.stop.tv_sec,(long int)proxy->bitratedata.stop.tv_usec, proxy->bitratedata.duration, proxy->bitratedata.tput_new,\
-  proxy->bitratedata.tput_current, proxy->bitratedata.bitrate, SERVER_IP, proxy->bitratedata.chunkname);
+ fprintf(file, "%ld.%06ld %2.6f %f %f %d %s %s\n", (long int)proxy->bitratedata.stop.tv_sec,(long int)proxy->bitratedata.stop.tv_usec, proxy->bitratedata.duration, proxy->bitratedata.tput_new,\
+  proxy->bitratedata.tput_current,(int)proxy->bitratedata.bitrate, SERVER_IP, proxy->bitratedata.chunkname);
  fclose(file);
 }
 

@@ -84,7 +84,7 @@ void InitSockData(SockData* data, int sock)
 }
 void FreeSockData(SockData* data)
 {
-   close_socket(data->sock);
+   //close_socket(data->sock);
    free(data->buf_read);
    free(data->buf_write);
    memset(data, 0, sizeof(*data));
