@@ -165,7 +165,8 @@ void TputCalculation(SockData* proxy, double alpha)
   gettimeofday(&(proxy->bitratedata.stop), NULL);
   //printf("End time %s",asctime( localtime(&(proxy->bitratedata.timer_f))) );
   //printf("%ld\n", (long int)proxy->bitratedata.stop.tv_usec);
-  duration = (proxy->bitratedata.stop.tv_sec - proxy->bitratedata.start.tv_sec)+(proxy->bitratedata.stop.tv_usec - proxy->bitratedata.start.tv_usec)/1000000;
+  duration = (proxy->bitratedata.stop.tv_sec - proxy->bitratedata.start.tv_sec)*1000000+(proxy->bitratedata.stop.tv_usec - proxy->bitratedata.start.tv_usec);
+  duration = duration/1000000;
   //duration = difftime(proxy->bitratedata.timer_f, proxy->bitratedata.timer_s);
   proxy->bitratedata.duration = duration;
   
