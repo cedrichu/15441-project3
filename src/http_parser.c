@@ -143,7 +143,7 @@ int BitrateSelection(SockData* proxy, SockData* client, double* bitrate, int bit
      http_getrequest(buf, sizeof(buf), head+5);
      memset(proxy->bitratedata.chunkname, 0, sizeof(proxy->bitratedata.chunkname));
      strcpy(proxy->bitratedata.chunkname, buf);
-     time(&(proxy->bitratedata.timer_s));
+     //time(&(proxy->bitratedata.timer_s));
      gettimeofday(&(proxy->bitratedata.start), NULL);
      //printf("start time %s", asctime(localtime(&(proxy->bitratedata.timer_s))) );
      //printf("%ld\n", (long int)proxy->bitratedata.start.tv_usec);
@@ -161,7 +161,7 @@ void TputCalculation(SockData* proxy, double alpha)
   if(proxy->type != PROXY)
     fprintf(stderr, "Tput Calculation Error.\n");
   
-  time(&(proxy->bitratedata.timer_f));
+  //time(&(proxy->bitratedata.timer_f));
   gettimeofday(&(proxy->bitratedata.stop), NULL);
   //printf("End time %s",asctime( localtime(&(proxy->bitratedata.timer_f))) );
   //printf("%ld\n", (long int)proxy->bitratedata.stop.tv_usec);

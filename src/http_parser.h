@@ -32,8 +32,8 @@ typedef struct
   double bitrate;
   double tput_current;
   double tput_new;
-  time_t timer_s;
-  time_t timer_f;
+  //time_t timer_s;
+  //time_t timer_f;
   struct timeval start;
   struct timeval stop;
   double duration;
