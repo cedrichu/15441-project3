@@ -114,16 +114,15 @@ int ReplaceURI(SockData* dst, SockData* src, char* search, char* replace)
   return 0;
 
 }
-int BitrateSelection(SockData* proxy, SockData* client, double* bitrate, int bitrate_no)
+int BitrateSelection(SockData* proxy, SockData* client, TputData* tput_data)
 {   
 
-  int i;
   char str[15];
   char buf[40];
   char* head = NULL;
   if(strstr(client->buf_read, "Seg") != NULL && strstr(client->buf_read, "-Frag") != NULL)
   {
-       if(proxy->bitratedata.tput_current == 0)
+       /*if(proxy->bitratedata.tput_current == 0)
        {
           proxy->bitratedata.tput_current = *bitrate;
           proxy->bitratedata.bitrate = *bitrate;
@@ -136,9 +135,9 @@ int BitrateSelection(SockData* proxy, SockData* client, double* bitrate, int bit
                 break;
            }
          proxy->bitratedata.bitrate = *(bitrate+i-1);
-       }
+       }*/
       
-     sprintf(str, "%d", (int)(proxy->bitratedata.bitrate));
+     sprintf(str, "%d", (int)(tput_data->bitrate));
      ReplaceURI(proxy, client, "1000" , str);
      
      head = strstr(proxy->buf_write, "/vod/");
@@ -155,8 +154,9 @@ int BitrateSelection(SockData* proxy, SockData* client, double* bitrate, int bit
 }
 
 
-void TputCalculation(SockData* proxy, double alpha)
+void TputCalculation(SockData* proxy, double alpha, TputData* tput_data, double* bitrate, int bitrate_no)
 {
+  int i;
   double duration;
   
   if(proxy->type != PROXY)
@@ -166,11 +166,20 @@ void TputCalculation(SockData* proxy, double alpha)
   duration = (proxy->bitratedata.stop.tv_sec - proxy->bitratedata.start.tv_sec)*1000000+(proxy->bitratedata.stop.tv_usec - proxy->bitratedata.start.tv_usec);
   duration = duration/1000000;
   proxy->bitratedata.duration = duration;
+  tput_data->tput_new = (double)(proxy->bitratedata.chunksize*8) / (duration*1000);
+  if(tput_data->tput_new > 2000)
+   tput_data->tput_new = 2000;
+  tput_data->tput_current = (alpha) * (tput_data->tput_new) + (1-alpha) * (tput_data->tput_current);
   
-  proxy->bitratedata.tput_new = (double)(proxy->bitratedata.chunksize*8) / (duration*1000);
-  if(proxy->bitratedata.tput_new > 2000)
-   proxy->bitratedata.tput_new = 2000;
-  proxy->bitratedata.tput_current = (alpha) * (proxy->bitratedata.tput_new) + (1-alpha) * (proxy->bitratedata.tput_current);
+  
+  for(i = 1; i < bitrate_no; i++)
+   {
+     if((tput_data->tput_current/1.5) < *(bitrate+i))
+        break;
+   }
+   tput_data->bitrate = *(bitrate+i-1);
+
+
   proxy->bitratedata.chunksize = 0;
   proxy->bitratedata.remain_chunksize = 0;
 

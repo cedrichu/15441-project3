@@ -27,11 +27,16 @@
 
 enum socktype {NONE, PROXY, CLIENT};
 
+typedef struct $
+{
+	double bitrate;
+    double tput_current;
+    double tput_new;
+
+}TputData;
+
 typedef struct 
 {
-  double bitrate;
-  double tput_current;
-  double tput_new;
   struct timeval start;
   struct timeval stop;
   double duration;
@@ -65,8 +70,8 @@ void FreeSockData(SockData* sock_data);
 void ResetSockData(SockData* sock_data);
 
 int ReplaceURI(SockData* dst, SockData* src, char* search, char* replace);
-int BitrateSelection(SockData* proxy, SockData* client, double* bitrate, int bitrate_no);
-void TputCalculation(SockData* proxy, double alpha);
+int BitrateSelection(SockData* proxy, SockData* client, TputData* tput_data);
+void TputCalculation(SockData* proxy, double alpha, TputData* tput_data, double* bitrate, int bitrate_no);
 int ChunkStart(SockData* proxy);
 int ChunkEnd(SockData* proxy);
 

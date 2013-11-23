@@ -58,11 +58,11 @@ void logging(char* buf)
   */
  fprintf(stdout, "%s", buf);
 }
-void ProxyLogging(SockData* proxy)
+void ProxyLogging(SockData* proxy, TputData tput_data)
 {
  FILE* file = fopen( PROXYLOG_NAME, "a" );
- fprintf(file, "%ld.%06ld %2.6f %f %f %d %s %s\n", (long int)proxy->bitratedata.stop.tv_sec,(long int)proxy->bitratedata.stop.tv_usec, proxy->bitratedata.duration, proxy->bitratedata.tput_new,\
-  proxy->bitratedata.tput_current,(int)proxy->bitratedata.bitrate, SERVER_IP, proxy->bitratedata.chunkname);
+ fprintf(file, "%ld.%06ld %2.6f %f %f %d %s %s\n", (long int)proxy->bitratedata.stop.tv_sec,(long int)proxy->bitratedata.stop.tv_usec, proxy->bitratedata.duration, tput_data.tput_new,\
+  tput_data.tput_current,(int)tput_data.bitrate, SERVER_IP, proxy->bitratedata.chunkname);
  fclose(file);
 }
 
@@ -156,8 +156,14 @@ int main(int argc, char* argv[])
      SockData sock_data[FD_SIZE];
      memset(sock_data, 0, sizeof(sock_data));
      SockData* sdata;
+     
      int bitrate_no = 4;
-     double bitrate[4] = {10, 100, 500, 1000}; 
+     double bitrate[4] = {10, 100, 500, 1000};
+     
+     TputData tput_data;
+     tput_data.tput_current = bitrate[0];
+     tput_data.tput_new = 0;
+     tput_data.bitrate = bitrate[0]; 
      
      int maxConn = 0;
      fd_set act_conn;
@@ -298,7 +304,7 @@ int main(int argc, char* argv[])
                           sdata->bufread_ind+= 3;
 
                           if(ReplaceURI(sock_data+sdata->paired_sock,sdata, VIDEO, VIDEO_NOLIST) == 0)
-                            if(BitrateSelection(sock_data+sdata->paired_sock, sdata, bitrate, bitrate_no) == 0)
+                            if(BitrateSelection(sock_data+sdata->paired_sock, sdata, &tput_data) == 0)
                               {
                                 strncpy(sock_data[sdata->paired_sock].buf_write, sdata->buf_read, sdata->bufread_ind);
                                 sock_data[sdata->paired_sock].bufwrite_ind = sdata->bufread_ind;
@@ -348,8 +354,8 @@ int main(int argc, char* argv[])
                      if(ChunkStart(sdata) == 0)
                       if(ChunkEnd(sdata) == 1)                  
                         {
-                          TputCalculation(sdata, ALPHA);
-                          ProxyLogging(sdata);
+                          TputCalculation(sdata, ALPHA, &tput_data, bitrate, bitrate_no);
+                          ProxyLogging(sdata, tput_data);
                         }
                      //printf("%f/n", sdata->bitratedata.duration);
                      //logging(sdata->buf_read);
