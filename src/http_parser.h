@@ -32,8 +32,6 @@ typedef struct
   double bitrate;
   double tput_current;
   double tput_new;
-  //time_t timer_s;
-  //time_t timer_f;
   struct timeval start;
   struct timeval stop;
   double duration;
@@ -71,39 +69,4 @@ int BitrateSelection(SockData* proxy, SockData* client, double* bitrate, int bit
 void TputCalculation(SockData* proxy, double alpha);
 int ChunkStart(SockData* proxy);
 int ChunkEnd(SockData* proxy);
-
-
-
-
-/*
-typedef struct 
-{
-	char method[255];
-	char path[255];
-	
-	long int write_byte;
-	
-	int header_size;
-	long int file_size;
-	FILE *file;
-	
-}HTTPResponse;
-
-
-
-int http_getline(char *, int, char *);
-int http_getrequest(char *, int, char *);
-void http_request(char *, HTTPResponse *);
-
-int get_mime_type(char *, const char *);
-void get_date(char *, int);
-void http_response(char*, int, HTTPResponse*);
-void http_GETHEAD_response(char*, int, HTTPResponse *);
-void http_POST_response(char*, int, HTTPResponse *);
-void http_header(char*, int,  FILE *, HTTPResponse *);
-void http_content(char*, int, HTTPResponse *);
-void http_not_found(char*, int, HTTPResponse * );
-void http_unimplemented(char*, int, HTTPResponse * );
-void http_unsupported(char*, int, HTTPResponse * );
-*/
 

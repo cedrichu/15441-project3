@@ -137,16 +137,17 @@ int BitrateSelection(SockData* proxy, SockData* client, double* bitrate, int bit
            }
          proxy->bitratedata.bitrate = *(bitrate+i-1);
        }
+      
      sprintf(str, "%d", (int)(proxy->bitratedata.bitrate));
      ReplaceURI(proxy, client, "1000" , str);
+     
      head = strstr(proxy->buf_write, "/vod/");
      http_getrequest(buf, sizeof(buf), head+5);
      memset(proxy->bitratedata.chunkname, 0, sizeof(proxy->bitratedata.chunkname));
      strcpy(proxy->bitratedata.chunkname, buf);
-     //time(&(proxy->bitratedata.timer_s));
+     
      gettimeofday(&(proxy->bitratedata.start), NULL);
-     //printf("start time %s", asctime(localtime(&(proxy->bitratedata.timer_s))) );
-     //printf("%ld\n", (long int)proxy->bitratedata.start.tv_usec);
+
      return 1;
    }
    else
@@ -161,20 +162,15 @@ void TputCalculation(SockData* proxy, double alpha)
   if(proxy->type != PROXY)
     fprintf(stderr, "Tput Calculation Error.\n");
   
-  //time(&(proxy->bitratedata.timer_f));
   gettimeofday(&(proxy->bitratedata.stop), NULL);
-  //printf("End time %s",asctime( localtime(&(proxy->bitratedata.timer_f))) );
-  //printf("%ld\n", (long int)proxy->bitratedata.stop.tv_usec);
   duration = (proxy->bitratedata.stop.tv_sec - proxy->bitratedata.start.tv_sec)*1000000+(proxy->bitratedata.stop.tv_usec - proxy->bitratedata.start.tv_usec);
   duration = duration/1000000;
-  //duration = difftime(proxy->bitratedata.timer_f, proxy->bitratedata.timer_s);
   proxy->bitratedata.duration = duration;
   
   proxy->bitratedata.tput_new = (double)(proxy->bitratedata.chunksize*8) / (duration*1000);
   if(proxy->bitratedata.tput_new > 2000)
    proxy->bitratedata.tput_new = 2000;
   proxy->bitratedata.tput_current = (alpha) * (proxy->bitratedata.tput_new) + (1-alpha) * (proxy->bitratedata.tput_current);
-  //logging
   proxy->bitratedata.chunksize = 0;
   proxy->bitratedata.remain_chunksize = 0;
 
@@ -205,7 +201,6 @@ int ChunkEnd(SockData* proxy)
   if(proxy->bitratedata.chunksize > 0)
   {
     proxy->bitratedata.remain_chunksize = proxy->bitratedata.remain_chunksize - proxy->bufread_ind;
-    //printf("chunk%d remain %d\n", proxy->bitratedata.chunksize,proxy->bitratedata.remain_chunksize);
     if(proxy->bitratedata.remain_chunksize == 0)
       return 1;
     else
